@@ -1,14 +1,13 @@
-import { useState, useRef } from 'react'
-import './App.css'
-import SpeechToText from './SpeechToText'
+import { useState, useRef } from 'react';
+import './App.css';
+import SpeechToText from './SpeechToText';
 
 function App() {
-
   return (
     <>
-    <SpeechToText/>
+      <SpeechToText />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
