@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import SpeechLanguageSelector from './SpeechLanguageSelector';
 import SpeechToText from './SpeechToText';
+import FinancialAdvice from './FinancialAdvice';
 
 const App = () => {
   const [selectedLang, setSelectedLang] = useState(null);
