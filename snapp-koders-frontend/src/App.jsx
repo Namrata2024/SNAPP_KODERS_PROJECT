@@ -10,7 +10,10 @@ const App = () => {
       {!selectedLang ? (
         <SpeechLanguageSelector onLanguageSelected={setSelectedLang} />
       ) : (
-        <SpeechToText selectedLang={selectedLang} />
+        <>
+          <SpeechToText selectedLang={selectedLang} />
+          <FinancialAdvice />
+        </>
       )}
     </div>
   );

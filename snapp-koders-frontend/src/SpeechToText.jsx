@@ -22,12 +22,15 @@ const SpeechToText = ({ selectedLang }) => {
   }, [darkMode]);
 
   const startListening = () => {
-    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    if (
+      !('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)
+    ) {
       alert('Web Speech API not supported in this browser.');
       return;
     }
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognition.lang = selectedLang;
     recognition.continuous = true;
@@ -76,7 +79,6 @@ const SpeechToText = ({ selectedLang }) => {
   return (
     <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white min-h-screen w-screen flex items-center justify-center px-4 transition-colors duration-300">
       <div className="w-full max-w-3xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 shadow-xl rounded-2xl p-8 relative">
-
         {/* Dark mode toggle */}
         <button
           onClick={() => setDarkMode(!darkMode)}
