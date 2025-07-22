@@ -1,13 +1,19 @@
-import { useState, useRef } from 'react';
-import './App.css';
+import React, { useState } from 'react';
+import SpeechLanguageSelector from './SpeechLanguageSelector';
 import SpeechToText from './SpeechToText';
 
-function App() {
+const App = () => {
+  const [selectedLang, setSelectedLang] = useState(null);
+
   return (
-    <>
-      <SpeechToText />
-    </>
+    <div className="w-screen h-screen">
+      {!selectedLang ? (
+        <SpeechLanguageSelector onLanguageSelected={setSelectedLang} />
+      ) : (
+        <SpeechToText selectedLang={selectedLang} />
+      )}
+    </div>
   );
-}
+};
 
 export default App;
