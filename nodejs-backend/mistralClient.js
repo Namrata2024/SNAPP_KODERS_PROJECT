@@ -1,6 +1,7 @@
 const axios = require("axios");
+const { MISTRAL_API_KEY } = require("./config/serverConfig");
 
-const MISTRAL_API_KEY = "YOUR_API_KEY_HERE"; // replace with your Mistral API key
+const MISTRAL_API_KEY = MISTRAL_API_KEY; // replace with your Mistral API key
 
 async function getFinancialAdvice(userData) {
   const prompt = `
