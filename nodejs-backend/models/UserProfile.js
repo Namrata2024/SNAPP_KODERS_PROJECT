@@ -1,21 +1,23 @@
-class UserProfile {
-    constructor({ age, gender, occupation, location, householdSize, education, incomeType, dailyIncome, monthlyIncome, expenses, debtStatus, digitalAccess, cashVsDigital, savingGoal, seasonalExpenses }) {
-        this.age = age;
-        this.gender = gender;
-        this.occupation = occupation;
-        this.location = location;
-        this.householdSize = householdSize;
-        this.education = education;
-        this.incomeType = incomeType;
-        this.dailyIncome = dailyIncome;
-        this.monthlyIncome = monthlyIncome;
-        this.expenses = expenses;
-        this.debtStatus = debtStatus;
-        this.digitalAccess = digitalAccess;
-        this.cashVsDigital = cashVsDigital;
-        this.savingGoal = savingGoal;
-        this.seasonalExpenses = seasonalExpenses;
-    }
-}
+const mongoose = require('mongoose');
 
-module.exports = UserProfile;
+const userProfileSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+
+  age: Number,
+  gender: String,
+  occupation: String,
+  location: String,
+  householdSize: Number,
+  education: String,
+  incomeType: String,
+  dailyIncome: Number,
+  monthlyIncome: Number,
+  expenses: [String],
+  debtStatus: String,
+  digitalAccess: String,
+  cashVsDigital: String,
+  savingGoal: String,
+  seasonalExpenses: [String]
+});
+
+module.exports = mongoose.model('UserProfile', userProfileSchema);
