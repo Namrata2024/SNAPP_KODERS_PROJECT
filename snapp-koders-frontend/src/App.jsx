@@ -1,3 +1,12 @@
+import React, { useState } from 'react';
+import SpeechLanguageSelector from './components/SpeechLanguageSelector';
+import SpeechToText from './components/SpeechToText';
+import FinancialAdvice from './components/FinancialAdvice';
+import ExpenseList from './components/ExpenseList';
+
+const App = () => {
+  const [selectedLang, setSelectedLang] = useState(null);
+
 // App.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -9,6 +18,18 @@ import Home from "./pages/Home"
 
 function App() {
   return (
+    <div className="w-screen h-screen">
+        {!selectedLang ? (
+        <SpeechLanguageSelector onLanguageSelected={setSelectedLang} />
+      ) : (
+        <>
+          <SpeechToText selectedLang={selectedLang} />
+          <ExpenseList/>
+          <FinancialAdvice />
+        </>
+      )}
+  
+    </div>   
     <>
       <CssBaseline />
       <Router>
@@ -21,6 +42,6 @@ function App() {
       </Router>
     </>
   );
-}
+};
 
 export default App;
