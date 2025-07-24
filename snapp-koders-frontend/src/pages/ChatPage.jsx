@@ -1,201 +1,323 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import {
+  FaMicrophone,
+  FaMicrophoneSlash,
+  FaTrash,
+  FaPaperPlane,
+} from "react-icons/fa";
 import {
   Box,
   TextField,
-  Card,
   Typography,
-  CardContent,
   IconButton,
   Paper,
-  Divider,
   Grid,
+  Card,
+  Stack
 } from "@mui/material";
-import { FiSend } from "react-icons/fi";
 
-const suggestions = [
-  "Track my monthly fertilizer expenses",
-  "Suggest savings tips for low income",
-  "What's my biggest spending category?",
-  "How can I optimize my farming costs?",
-];
+// const suggestions = [
+//   "Track my monthly fertilizer expenses",
+//   "Suggest savings tips for low income",
+//   "What's my biggest spending category?",
+//   "How can I optimize my farming costs?",
+// ];
 
-
-// import axios from "axios";
-
-
-// const requestBody = {
-//     age: 32,
-//     gender: "female",
-//     occupation: "farm laborer",
-//     location: "rural Bihar",
-//     householdSize: 5,
-//     education: "primary school",
-//     incomeType: "daily",
-//     dailyIncome: 300,
-//     monthlyIncome: 7000,
-//     expenses: [
-//         "₹120 groceries",
-//         "₹40 mobile recharge",
-//         "₹80 transport",
-//         "₹50 tea/snacks"
-//     ],
-//     debtStatus: "No current loans",
-//     digitalAccess: "Basic smartphone with UPI",
-//     cashVsDigital: "70% cash, 30% digital",
-//     savingGoal: "buying a sewing machine for home business",
-//     seasonalExpenses: [
-//     "₹1500 school fees in June",
-//     "₹1000 for Diwali clothes"
-// ], query: input
-// };
-
-//   const getAdvice = async () => {
-//     setLoading(true);
-//     setError("");
-//     setAdvice("");
-//     try {
-//       const response = await axios.post("http://localhost:8080/api/advice", requestBody, {
-//         headers: {
-//           "Content-Type": "application/json"
-//         }
-//       });
-//       // Response is stringified JSON, so parse it
-//       const data = typeof response.data === "string" ? JSON.parse(response.data) : response.data;
-//       setAdvice(data.advice);
-//     } catch (err) {
-//       setError("Failed to fetch advice");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-
-
-
-const ChatPage = () => {
+const SpeechToText = ({ selectedLang }) => {
+  const [listening, setListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [typedInput, setTypedInput] = useState("");
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
+  const recognitionRef = useRef(null);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    setMessages([...messages, { text: input, sender: "user" }]);
-    setInput("");
-    // Placeholder for bot reply
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: "Here's a financial suggestion based on your query!",
-          sender: "bot",
-        },
-      ]);
-    }, 600);
+  const [suggestions, setSuggestions] = useState([]);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [userId, setUserId] = useState("rao1")
+  const [activeChat, setActiveChat] = useState();
+
+   useEffect(() => {
+    axios.get(`http://localhost:8080/api/bachatSaathi/faq`)
+      .then(res => {
+        console.log(res)
+        setSuggestions(res.data.faqs)
+      })
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+  axios.get(`http://localhost:8080/api/bachatSaathi/chats/rao1`)
+    .then(res => {
+      setChatHistory(res.data.chats || []);
+    })
+    .catch(console.error);
+}, []);
+  
+
+  const startListening = () => {
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      alert("Web Speech API not supported in this browser.");
+      return;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = selectedLang || "en-US";
+    recognition.continuous = true;
+    recognition.interimResults = false;
+
+    recognition.onresult = async (event) => {
+      let finalTranscript = "";
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        finalTranscript += event.results[i][0].transcript;
+      }
+      setTranscript((prev) => prev + " " + finalTranscript);
+      handleSend(finalTranscript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Recognition error:", event);
+    };
+
+    recognition.onend = () => {
+      if (listening) recognition.start();
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setListening(true);
   };
 
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setListening(false);
+    }
+  };
+
+  const resetTranscript = () => {
+    setTranscript("");
+    setTypedInput("");
+    setMessages([]);
+  };
+
+  const handleSend = async (input, userID) => {
+  if (!input.trim()) return;
+
+  const message = input.trim();
+  setMessages((prev) => [...prev, { text: message, sender: "user" }]);
+
+  try {
+    const response = await axios.post("http://localhost:8080/api/bachatSaathi/chat", {
+      userID,
+      chatID: activeChat, // can be undefined for new chats
+      message,
+    });
+
+    const { chatID, reply } = response.data;
+
+    // Update chat ID if it's a new chat
+    if (!activeChat) {
+      setActiveChat(chatID);
+      // Refresh sidebar with new chat
+      const res = await axios.get(`http://localhost:8080/api/bachatSaathi/chats/${userID}`);
+      setChatHistory(res.data.chats || []);
+    }
+
+    // Append AI response
+    setMessages((prev) => [...prev, { text: reply, sender: "bot" }]);
+  } catch (error) {
+    console.error("Error sending message:", error);
+    setMessages((prev) => [
+      ...prev,
+      { text: "Failed to send message. Please try again.", sender: "bot" },
+    ]);
+  }
+};
+
+  const handleTypedInputSubmit = (userId) => {
+    if (typedInput.trim() !== "") {
+      handleSend(typedInput.trim(), userId);
+      setTypedInput("");
+    }
+  };
+
+ const loadChat = async (chatID) => {
+  try {
+    const res = await axios.get(`http://localhost:8080/api/bachatSaathi/chat/${chatID}`);
+    const chatMessages = res.data.messages || [];
+
+    // Transform messages to match UI
+    const formattedMessages = chatMessages.map((msg) => ({
+      text: msg.content,
+      sender: msg.role === "user" ? "user" : "bot"
+    }));
+
+    setMessages(formattedMessages);
+  } catch (err) {
+    console.error("Error loading chat:", err);
+  }
+};
+
+
   return (
+    <Stack flexDirection="row" >
+   
+    <Box
+  sx={{
+    width: "30vw",
+    height: 600,
+    backgroundColor: "#fff",
+    p: 2,
+    // borderRadius: 3,
+    // boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
+    overflowY: "auto",
+    borderRight: "1px solid #ccc"
+    // mt: 1,
+  }}
+>
+  <Typography variant="h6" fontWeight={600} mb={2}>
+    Chat History
+  </Typography>
+  {chatHistory.map((chat) => (
+    <Card
+      key={chat.chatID}
+      variant="outlined"
+      sx={{
+  mb: 1,
+  p: 1,
+  borderRadius: 2,
+  cursor: "pointer",
+  backgroundColor: activeChat === chat.chatID ? "#e0f7fa" : "transparent",
+  "&:hover": { backgroundColor: "#f1f1f1" },
+}}
+      onClick={() => {
+  setActiveChat(chat.chatID);
+  loadChat(chat.chatID);
+}}
+    >
+      <Typography variant="subtitle2" noWrap>
+        {chat.title.replace(/^"+|"+$/g, "")}
+      </Typography>
+      <Typography variant="caption" color="textSecondary">
+        {new Date(chat.updatedAt).toLocaleString()}
+      </Typography>
+    </Card>
+  ))}
+</Box>
     <Box
       sx={{
-        height: "100vh",
-        backgroundColor: "#f3f6fb",
+        width: '70vw',
+        height: 600,
+        backgroundColor: "#f5f5f5",
         display: "flex",
         flexDirection: "column",
         fontFamily: "Poppins, sans-serif",
+        // borderRadius: 3,
+        // boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
+        overflow: "hidden",
+        margin: "auto",
+        // mt: 1,
       }}
     >
-      {/* Suggestions */}
-      <Box
-        sx={{
-          p: 2,
-          backgroundColor: "#f3f6fb",
-          borderBottom: "1px solid #e0e0e0",
-        }}
-      >
+      {/* <Box sx={{ p: 2, backgroundColor: "#3f51b5", color: "white" }}>
+        <Typography variant="h6" fontWeight={600}>
+          Bachat Saathi
+        </Typography>
+      </Box> */}
+
+      <Box sx={{ p: 2, backgroundColor: "#f5f5f5", borderBottom: "1px solid #e0e0e0" }}>
         <Typography variant="subtitle1" fontWeight={600} mb={1}>
           Try asking:
         </Typography>
-        <Grid container spacing={2}>
+        <Grid container spacing={1}>
           {suggestions.map((text, i) => (
             <Grid item key={i}>
               <Card
                 variant="outlined"
                 sx={{
-                  px: 2,
-                  py: 1,
+                  px: 1.5,
+                  py: 0.5,
                   borderRadius: 2,
                   cursor: "pointer",
                   backgroundColor: "#fff",
-                  "&:hover": { backgroundColor: "#f4ede5" },
+                  "&:hover": { backgroundColor: "#e3f2fd" },
                 }}
-                onClick={() => setInput(text)}
+                onClick={() => setTypedInput(text.question)}
               >
-                <Typography variant="body2">{text}</Typography>
+                <Typography variant="caption">{text.question}</Typography>
               </Card>
             </Grid>
           ))}
         </Grid>
       </Box>
 
-      {/* Chat Area */}
-      <Box
-        sx={{
-          flex: 1,
-          overflowY: "auto",
-          px: 3,
-          py: 2,
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-        }}
-      >
+      <Box sx={{ flex: 1, p: 2, overflowY: "auto", backgroundColor: "#fff" }}>
         {messages.map((msg, i) => (
           <Box
             key={i}
             sx={{
-              alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
-              maxWidth: "70%",
-              backgroundColor: msg.sender === "user" ? "#cfe8fc" : "#ffffff",
-              borderRadius: 2,
-              px: 2,
-              py: 1,
-              boxShadow: 1,
+              display: "flex",
+              justifyContent: msg.sender === "user" ? "flex-end" : "flex-start",
+              mb: 2,
             }}
           >
-            <Typography fontSize="0.95rem">{msg.text}</Typography>
+            <Box
+              sx={{
+                maxWidth: "80%",
+                p: 1.5,
+                borderRadius: 2,
+                backgroundColor: msg.sender === "user" ? "#e3f2fd" : "#f1f1f1",
+                boxShadow: 1,
+              }}
+            >
+              <Typography fontSize="0.85rem">{msg.text}</Typography>
+            </Box>
           </Box>
         ))}
       </Box>
 
-      {/* Prompt Input */}
       <Paper
         component="form"
         elevation={3}
         onSubmit={(e) => {
           e.preventDefault();
-          handleSend();
+          handleTypedInputSubmit(userId);
         }}
         sx={{
           p: 1,
           display: "flex",
           alignItems: "center",
-          borderTop: "1px solid #ddd",
           backgroundColor: "#fff",
+          borderTop: "1px solid #ddd",
         }}
       >
         <TextField
           fullWidth
           placeholder="Ask Bachat Saathi something..."
           variant="standard"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+          value={typedInput}
+          onChange={(e) => setTypedInput(e.target.value)}
           InputProps={{ disableUnderline: true }}
-          sx={{ ml: 2 }}
+          sx={{ mx: 1 }}
         />
-        <IconButton type="submit" color="primary" sx={{ mx: 1 }}>
-          <FiSend/>
+        <IconButton type="submit" color="primary" sx={{ mx: 0.5 }}>
+          <FaPaperPlane />
+        </IconButton>
+        <IconButton
+          onClick={listening ? stopListening : startListening}
+          color={listening ? "error" : "primary"}
+          sx={{ mx: 0.5 }}
+        >
+          {listening ? <FaMicrophoneSlash /> : <FaMicrophone />}
+        </IconButton>
+        <IconButton onClick={resetTranscript} color="secondary" sx={{ mx: 0.5 }}>
+          <FaTrash />
         </IconButton>
       </Paper>
     </Box>
+       
+    </Stack>
   );
 };
 
-export default ChatPage;
+export default SpeechToText;

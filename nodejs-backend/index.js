@@ -6,7 +6,7 @@ const cors = require("cors");
 const { PORTS,PORT,MONGO_DB_CONN } = require("./config/serverConfig.js");
 const ApiRoutes = require("./routes/index");
 const expenseRoutes = require('./routes/expense');
-const bachatSaathiService = require('./service/bachatSaathiService');
+const bachatSaathiService = require('./service/BachatSaathiService.js');
 
 const setupAndStartServer = async () => {
   // create the express object
