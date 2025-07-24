@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-export default function ExpenseList() {
 
-// export default function ExpenseTable({ expenses, error }) {
+export default function ExpenseList({ expenses, error }) {
   // const [expenses, setExpenses] = useState([]);
   const [grouped, setGrouped] = useState({});
 

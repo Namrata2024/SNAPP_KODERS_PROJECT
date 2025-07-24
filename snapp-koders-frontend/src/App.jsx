@@ -68,8 +68,11 @@ const App = () => {
                 <SpeechLanguageSelector onLanguageSelected={setSelectedLang} />
               ) : (
                 <div className="w-screen h-screen">
-                  <SpeechToText selectedLang={selectedLang} />
-                  <ExpenseList />
+                  <SpeechToText 
+                  selectedLang={selectedLang}
+                  fetchExpenses={fetchExpenses}
+                   />
+                  <ExpenseList expenses={expenses} error={error}/>
                   <FinancialAdvice />
                 </div>
               )
@@ -86,13 +89,13 @@ const App = () => {
                     selectedLang={selectedLang}
                     fetchExpenses={fetchExpenses}
                   />
-                                    <ExpenseList  />
+                  <ExpenseList expenses={expenses} error={error} />
                   <FinancialAdvice />
                 </div>
               )
             }
           />
-          {/* <Route path="/expense-tracker" element={<ExpenseList  />} /> */}
+          <Route path="/expense-tracker" element={<ExpenseList expenses={expenses} error={error} />} />
           <Route path="/home" element={<Home />} />
           <Route path="/financial-advice" element={<FinancialAdvice />} />
           <Route path="/chat" element={<ChatPage />} />
