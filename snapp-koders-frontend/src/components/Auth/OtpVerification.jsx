@@ -1,14 +1,16 @@
-// components/Auth/OtpVerification.jsx
 import React, { useState } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const OtpVerification = ({ phone, onVerifyOtp }) => {
   const [otp, setOtp] = useState("");
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleVerify = (e) => {
     e.preventDefault();
     if (otp.length === 6) {
-      onVerifyOtp(otp);
+      onVerifyOtp(otp); // Call the parent function to verify OTP
+      navigate("/home"); // Redirect to the Home page on success
     } else {
       alert("OTP must be 6 digits");
     }

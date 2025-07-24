@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const ExpenseTable = () => {
-  const [expenses, setExpenses] = useState([]);
+export default function ExpenseList() {
+  // const [expenses, setExpenses] = useState([]);
   const [grouped, setGrouped] = useState({});
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/expenses')
-      .then(res => {
+    axios
+      .get('http://localhost:5000/api/expenses')
+      .then((res) => {
         const expenses = res.data;
         const groupedData = expenses.reduce((acc, curr) => {
           // Skip if curr is not an object or lacks amount
@@ -19,7 +20,7 @@ const ExpenseTable = () => {
           ) {
             return acc;
           }
-          
+
           const cat = curr.category;
           if (!acc[cat]) {
             acc[cat] = { total: 0, items: [] };
@@ -30,7 +31,7 @@ const ExpenseTable = () => {
         }, {});
         setGrouped(groupedData);
       })
-      .catch(err => console.error(err));
+      .catch((err) => console.error(err));
   }, []);
 
   const [openCategory, setOpenCategory] = useState(null);
@@ -46,14 +47,19 @@ const ExpenseTable = () => {
         <div key={category} style={accordionContainer}>
           <div onClick={() => toggleCategory(category)} style={accordionHeader}>
             <strong>{category}</strong> — ₹{data.total.toFixed(2)}
-            <span style={{ float: 'right' }}>{openCategory === category ? '-' : '+'}</span>
+            <span style={{ float: 'right' }}>
+              {openCategory === category ? '-' : '+'}
+            </span>
           </div>
           {openCategory === category && (
             <div style={accordionBody}>
               <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                {data.items.map(item => (
+                {data.items.map((item) => (
                   <li key={item._id}>
-                    {item.title} — ₹{item.amount} on {new Date(item.date).toLocaleDateString()} via {item.paymentMethod}
+                    {/* {item.title} — ₹{item.amount} on {new Date(item.date).toLocaleDateString()} via {item.paymentMethod} */}
+                    {item.title} — ₹{item.amount} on{' '}
+                    {new Date(item.date).toLocaleDateString()} via{' '}
+                    {item.paymentMethod}
                   </li>
                 ))}
               </ul>
@@ -63,26 +69,25 @@ const ExpenseTable = () => {
       ))}
     </div>
   );
-};
+}
 
 const accordionContainer = {
   border: '1px solid #ccc',
   marginBottom: '10px',
   borderRadius: '5px',
-  overflow: 'hidden'
+  overflow: 'hidden',
 };
 
 const accordionHeader = {
   background: '#f7f7f7',
   padding: '10px 15px',
   cursor: 'pointer',
-  fontSize: '16px'
+  fontSize: '16px',
 };
 
 const accordionBody = {
   background: '#fff',
-  padding: '10px 15px'
+  padding: '10px 15px',
 };
 
-
-export default ExpenseTable;
+// export default ExpenseTable;

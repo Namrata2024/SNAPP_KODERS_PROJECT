@@ -14,20 +14,27 @@ import {
   Divider,
 } from "@mui/material";
 import { FiMenu, FiLogOut, FiX } from "react-icons/fi"; // React Icons
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const menuItems = [
-  "Voice-led Expense Tracker",
-  "Smart Financial Tips",
-  "Bachat Saathi Chatbot",
+  { text: "Voice-led Expense Tracker", route: "/expense-tracker" },
+  { text: "Smart Financial Tips", route: "/financial-advice" },
+  { text: "Bachat Saathi Chatbot", route: "/chatbot" },
 ];
 
-const Navbar = ({ onMenuClick, onLogout }) => {
+const Navbar = ({ onLogout }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
+  };
+
+  const handleMenuClick = (route: string) => {
+    navigate(route); // Navigate to the specified route
+    setDrawerOpen(false); // Close the drawer
   };
 
   return (
@@ -90,14 +97,12 @@ const Navbar = ({ onMenuClick, onLogout }) => {
               </Box>
               <Divider />
               <List>
-                {menuItems.map((text) => (
+                {menuItems.map(({ text, route }) => (
                   <ListItem
-                    button
+                    component="button"
                     key={text}
-                    onClick={() => {
-                      onMenuClick(text);
-                      setDrawerOpen(false);
-                    }}
+                    onClick={() => handleMenuClick(route)}
+                    sx={{ all: "unset", cursor: "pointer", display: "block" }}
                   >
                     <ListItemText
                       primary={text}
@@ -113,11 +118,12 @@ const Navbar = ({ onMenuClick, onLogout }) => {
                 ))}
                 <Divider sx={{ my: 1 }} />
                 <ListItem
-                  button
+                  component="div"
                   onClick={() => {
                     onLogout();
                     setDrawerOpen(false);
                   }}
+                  sx={{ cursor: "pointer" }}
                 >
                   <FiLogOut size={20} style={{ marginRight: 8 }} />
                   <ListItemText
@@ -132,11 +138,11 @@ const Navbar = ({ onMenuClick, onLogout }) => {
           </>
         ) : (
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            {menuItems.map((text) => (
+            {menuItems.map(({ text, route }) => (
               <Typography
                 key={text}
                 variant="button"
-                onClick={() => onMenuClick(text)}
+                onClick={() => handleMenuClick(route)}
                 sx={{
                   mx: 2,
                   cursor: "pointer",

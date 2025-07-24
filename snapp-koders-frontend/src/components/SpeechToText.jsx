@@ -9,14 +9,14 @@ import {
   FaSun,
 } from 'react-icons/fa';
 
-const SpeechToText = ({ selectedLang }) => {
-  
+const SpeechToText = ({ selectedLang, fetchExpenses }) => {
+
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [typedInput, setTypedInput] = useState('');
   const [darkMode, setDarkMode] = useState(true);
   const recognitionRef = useRef(null);
-
+  
   // Update <html> class based on darkMode
   useEffect(() => {
     const root = document.documentElement;
@@ -33,24 +33,21 @@ const SpeechToText = ({ selectedLang }) => {
 
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
- 
+
     const recognition = new SpeechRecognition();
     recognition.lang = selectedLang;
     recognition.continuous = true;
     recognition.interimResults = false;
 
-    recognition.onresult = (event) => {
+    recognition.onresult = async (event) => {
       let finalTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         finalTranscript += event.results[i][0].transcript;
       }
       setTranscript((prev) => prev + ' ' + finalTranscript);
-      let responseData = parseExpenseData(finalTranscript);
 
-      if (responseData)
-      {
-        postExpenseData(responseData);
-      }
+      // Parse misral expense data and save into db
+      parseExpensesWithMistral(finalTranscript);
     };
 
     recognition.onerror = (event) => {
@@ -81,62 +78,58 @@ const SpeechToText = ({ selectedLang }) => {
   const handleTypedInputSubmit = () => {
     if (typedInput.trim() !== '') {
       setTranscript((prev) => prev + ' ' + typedInput.trim());
+      // Parse misral expense data and save into db
+      parseExpensesWithMistral(typedInput.trim());
+      // clear input text field
       setTypedInput('');
     }
   };
 
   //#region "Expense Parsing"
 
-async function parseExpensesWithMistral(transcript) {
-  const prompt = `
-  Extract structured data from the following sentence:
-  "${transcript}"
+  const isEmptyObject = (obj) => JSON.stringify(obj) === '{}';
 
-  Return JSON with:
-  - amount (number)
-  - category (string)
-  - paymentMethod (string)
-  - date (natural language or yyyy-mm-dd)
-  `;
+  async function parseExpensesWithMistral(transcript) {
 
-    const data = null;
-    try {
-      const response = await axios.post("http://localhost:8080/api/expense", prompt, {
-        headers: {
-          "Content-Type": "application/json"
+    fetch('http://localhost:5000/api/expenses/mistral', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: transcript })
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        if (!isEmptyObject(data)) {         
+          const parsed = JSON.parse(data.response);
+          console.log('Parsed Expense:', parsed);
+          if (!isEmptyObject(parsed) && parsed.amount > 0) {
+            postExpenseData(parsed, transcript);
+          }
         }
-      });
-      // Response is stringified JSON, so parse it
-      return typeof response.data === "string" ? JSON.parse(response.data) : response.data;     
-    } catch (err) {
-      setError("Failed to fetch expense data");
-    } 
-    return "";
+      })
+      .catch(err => console.error(err));
   };
 
-  const postExpenseData = (ExpenseData ) => {
-   if (ExpenseData) {
-       axios.post('http://localhost:5000/api/expenses', ExpenseData);
-    } else {
-      alert("Couldn't parse input. Try saying something like 'Add 200 rupees for groceries'.");
-    }
-  };
-
-  const parseExpenseData = (voiceText) => {
-    const pattern = /(?:rs|rupees)?\s*(\d+)\s*(?:rs|rupees)?(?:\s*(?:for|on|to|of)?)?\s*(.+)?/i;
-
-    const match = voiceText.match(pattern);
-    if (match) {
-      const amount = parseInt(match[1]);
-      const category = match[2]?.trim() || "miscellaneous";
-      axios.post('http://localhost:5000/api/expenses', {
+  const postExpenseData = async (ExpenseData, voiceText) => {
+    if (ExpenseData) {
+      const amount = parseInt(ExpenseData.amount);
+      const category = ExpenseData.category;
+      try {
+        await axios.post('http://localhost:5000/api/expenses', {
         amount,
         category,
         note: voiceText,
         date: new Date()
       });
-    } else {
-      //alert("Couldn't parse input. Try saying something like 'Add 200 rupees for groceries'.");
+
+      // Get saved data from database
+      await fetchExpenses();
+      } catch (error) {
+         console.error('Error posting expense data:', error);
+      }      
+    } 
+    else {
+      alert("Couldn't parse input. Try saying something like 'Add 200 rupees for groceries'.");
     }
   };
 
@@ -161,11 +154,10 @@ async function parseExpensesWithMistral(transcript) {
         <div className="flex flex-wrap justify-center gap-4 mb-6">
           <button
             onClick={listening ? stopListening : startListening}
-            className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition duration-200 ${
-              listening
+            className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition duration-200 ${listening
                 ? 'bg-red-600 hover:bg-red-700 text-white'
                 : 'bg-green-600 hover:bg-green-700 text-white'
-            } shadow-lg`}
+              } shadow-lg`}
           >
             {listening ? <FaMicrophoneSlash /> : <FaMicrophone />}
             {listening ? 'Stop Listening' : 'Start Listening'}
