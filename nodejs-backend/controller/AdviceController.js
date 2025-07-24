@@ -4,7 +4,7 @@ const adviceService = new AdviceService();
 
 const getAdvice = async (req, res) => {
   try {
-    const advice = await adviceService.getFinancialAdvice(req.body, req.userId);
+  const advice = await adviceService.getFinancialAdvice(req.body);
     return res.status(201).json({ advice });
   } catch (error) {
     console.error("Error getting advice:", error);
