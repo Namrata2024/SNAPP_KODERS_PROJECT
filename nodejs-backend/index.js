@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const http = require("http");
 const bodyparser = require("body-parser");
 const cors = require("cors");
-const { PORTS,PORT } = require("./config/serverConfig.js");
+const { PORTS,PORT,MONGO_DB_CONN } = require("./config/serverConfig.js");
 const ApiRoutes = require("./routes/index");
 const expenseRoutes = require('./routes/expense');
 const bachatSaathiService = require('./service/bachatSaathiService');
@@ -17,9 +17,9 @@ const setupAndStartServer = async () => {
   app.use('/api/expenses', expenseRoutes);
   app.use('/api/bachatSaathi', bachatSaathiService);
 
-  mongoose.connect('mongodb+srv://expenseUser:Code3022*@hackathoncluster.g7zvcw6.mongodb.net/?retryWrites=true&w=majority&appName=HackathonCluster', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
+  mongoose.connect(MONGO_DB_CONN, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
   });
 
   //Create servers on multiple ports with error handling

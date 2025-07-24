@@ -1,57 +1,57 @@
-import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
 import {
   FaMicrophone,
   FaMicrophoneSlash,
   FaTrash,
   FaPaperPlane,
-  FaMoon,
-  FaSun,
-} from 'react-icons/fa';
+} from "react-icons/fa";
+import {
+  Box,
+  TextField,
+  Typography,
+  IconButton,
+  Paper,
+  Grid,
+  Card,
+} from "@mui/material";
 
-const SpeechToText = ({ selectedLang, fetchExpenses }) => {
+const suggestions = [
+  "Track my monthly fertilizer expenses",
+  "Suggest savings tips for low income",
+  "What's my biggest spending category?",
+  "How can I optimize my farming costs?",
+];
 
+const SpeechToText = ({ selectedLang }) => {
   const [listening, setListening] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const [typedInput, setTypedInput] = useState('');
-  const [darkMode, setDarkMode] = useState(true);
+  const [transcript, setTranscript] = useState("");
+  const [typedInput, setTypedInput] = useState("");
+  const [messages, setMessages] = useState([]);
   const recognitionRef = useRef(null);
-  
-  // Update <html> class based on darkMode
-  useEffect(() => {
-    const root = document.documentElement;
-    darkMode ? root.classList.add('dark') : root.classList.remove('dark');
-  }, [darkMode]);
 
   const startListening = () => {
-    if (
-      !('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)
-    ) {
-      alert('Web Speech API not supported in this browser.');
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      alert("Web Speech API not supported in this browser.");
       return;
     }
-
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    recognition.lang = selectedLang;
+    recognition.lang = selectedLang || "en-US";
     recognition.continuous = true;
     recognition.interimResults = false;
 
     recognition.onresult = async (event) => {
-      let finalTranscript = '';
+      let finalTranscript = "";
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         finalTranscript += event.results[i][0].transcript;
       }
-      setTranscript((prev) => prev + ' ' + finalTranscript);
-
-      // Parse misral expense data and save into db
-      parseExpensesWithMistral(finalTranscript);
+      setTranscript((prev) => prev + " " + finalTranscript);
+      handleSend(finalTranscript);
     };
 
     recognition.onerror = (event) => {
-      console.error('Recognition error:', event);
+      console.error("Recognition error:", event);
     };
 
     recognition.onend = () => {
@@ -71,137 +71,148 @@ const SpeechToText = ({ selectedLang, fetchExpenses }) => {
   };
 
   const resetTranscript = () => {
-    setTranscript('');
-    setTypedInput('');
+    setTranscript("");
+    setTypedInput("");
+    setMessages([]);
+  };
+
+  const handleSend = async (input) => {
+    if (!input.trim()) return;
+    setMessages((prev) => [...prev, { text: input, sender: "user" }]);
+    try {
+      const response = await axios.post("http://localhost:5000/api/recommend", {
+        query: input,
+      });
+      const botReply = response.data.recommendation || "No response from the server.";
+      setMessages((prev) => [...prev, { text: botReply, sender: "bot" }]);
+    } catch (error) {
+      console.error("Error fetching recommendation:", error);
+      setMessages((prev) => [
+        ...prev,
+        { text: "Failed to fetch recommendation. Please try again.", sender: "bot" },
+      ]);
+    }
   };
 
   const handleTypedInputSubmit = () => {
-    if (typedInput.trim() !== '') {
-      setTranscript((prev) => prev + ' ' + typedInput.trim());
-      // Parse misral expense data and save into db
-      parseExpensesWithMistral(typedInput.trim());
-      // clear input text field
-      setTypedInput('');
+    if (typedInput.trim() !== "") {
+      handleSend(typedInput.trim());
+      setTypedInput("");
     }
   };
-
-  //#region "Expense Parsing"
-
-  const isEmptyObject = (obj) => JSON.stringify(obj) === '{}';
-
-  async function parseExpensesWithMistral(transcript) {
-
-    fetch('http://localhost:5000/api/expenses/mistral', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: transcript })
-    })
-      .then(res => res.json())
-      .then(data => {
-        console.log(data);
-        if (!isEmptyObject(data)) {         
-          const parsed = JSON.parse(data.response);
-          console.log('Parsed Expense:', parsed);
-          if (!isEmptyObject(parsed) && parsed.amount > 0) {
-            postExpenseData(parsed, transcript);
-          }
-        }
-      })
-      .catch(err => console.error(err));
-  };
-
-  const postExpenseData = async (ExpenseData, voiceText) => {
-    if (ExpenseData) {
-      const amount = parseInt(ExpenseData.amount);
-      const category = ExpenseData.category;
-      try {
-        await axios.post('http://localhost:5000/api/expenses', {
-        amount,
-        category,
-        note: voiceText,
-        date: new Date()
-      });
-
-      // Get saved data from database
-      await fetchExpenses();
-      } catch (error) {
-         console.error('Error posting expense data:', error);
-      }      
-    } 
-    else {
-      alert("Couldn't parse input. Try saying something like 'Add 200 rupees for groceries'.");
-    }
-  };
-
-  //#endregion "Expense Parsing"
 
   return (
-    <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white min-h-screen w-screen flex items-center justify-center px-4 transition-colors duration-300">
-      <div className="w-full max-w-3xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 shadow-xl rounded-2xl p-8 relative">
-        {/* Dark mode toggle */}
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          className="absolute top-4 right-4 text-xl text-yellow-400 dark:text-blue-300 hover:scale-110 transition"
+    <Box
+      sx={{
+        width: '50vw',
+        height: 600,
+        backgroundColor: "#f5f5f5",
+        display: "flex",
+        flexDirection: "column",
+        fontFamily: "Poppins, sans-serif",
+        borderRadius: 3,
+        boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
+        overflow: "hidden",
+        margin: "auto",
+        mt: 5,
+      }}
+    >
+      {/* <Box sx={{ p: 2, backgroundColor: "#3f51b5", color: "white" }}>
+        <Typography variant="h6" fontWeight={600}>
+          Bachat Saathi
+        </Typography>
+      </Box> */}
+
+      <Box sx={{ p: 2, backgroundColor: "#f5f5f5", borderBottom: "1px solid #e0e0e0" }}>
+        <Typography variant="subtitle1" fontWeight={600} mb={1}>
+          Try asking:
+        </Typography>
+        <Grid container spacing={1}>
+          {suggestions.map((text, i) => (
+            <Grid item key={i}>
+              <Card
+                variant="outlined"
+                sx={{
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 2,
+                  cursor: "pointer",
+                  backgroundColor: "#fff",
+                  "&:hover": { backgroundColor: "#e3f2fd" },
+                }}
+                onClick={() => setTypedInput(text)}
+              >
+                <Typography variant="caption">{text}</Typography>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+
+      <Box sx={{ flex: 1, p: 2, overflowY: "auto", backgroundColor: "#fff" }}>
+        {messages.map((msg, i) => (
+          <Box
+            key={i}
+            sx={{
+              display: "flex",
+              justifyContent: msg.sender === "user" ? "flex-end" : "flex-start",
+              mb: 2,
+            }}
+          >
+            <Box
+              sx={{
+                maxWidth: "80%",
+                p: 1.5,
+                borderRadius: 2,
+                backgroundColor: msg.sender === "user" ? "#e3f2fd" : "#f1f1f1",
+                boxShadow: 1,
+              }}
+            >
+              <Typography fontSize="0.85rem">{msg.text}</Typography>
+            </Box>
+          </Box>
+        ))}
+      </Box>
+
+      <Paper
+        component="form"
+        elevation={3}
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleTypedInputSubmit();
+        }}
+        sx={{
+          p: 1,
+          display: "flex",
+          alignItems: "center",
+          backgroundColor: "#fff",
+          borderTop: "1px solid #ddd",
+        }}
+      >
+        <TextField
+          fullWidth
+          placeholder="Ask Bachat Saathi something..."
+          variant="standard"
+          value={typedInput}
+          onChange={(e) => setTypedInput(e.target.value)}
+          InputProps={{ disableUnderline: true }}
+          sx={{ mx: 1 }}
+        />
+        <IconButton type="submit" color="primary" sx={{ mx: 0.5 }}>
+          <FaPaperPlane />
+        </IconButton>
+        <IconButton
+          onClick={listening ? stopListening : startListening}
+          color={listening ? "error" : "primary"}
+          sx={{ mx: 0.5 }}
         >
-          {darkMode ? <FaSun /> : <FaMoon />}
-        </button>
-
-        <h1 className="text-4xl font-bold text-center mb-8">
-          🎙️ Smart Voice & Text Assistant
-        </h1>
-
-        {/* Control Buttons */}
-        <div className="flex flex-wrap justify-center gap-4 mb-6">
-          <button
-            onClick={listening ? stopListening : startListening}
-            className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition duration-200 ${listening
-                ? 'bg-red-600 hover:bg-red-700 text-white'
-                : 'bg-green-600 hover:bg-green-700 text-white'
-              } shadow-lg`}
-          >
-            {listening ? <FaMicrophoneSlash /> : <FaMicrophone />}
-            {listening ? 'Stop Listening' : 'Start Listening'}
-          </button>
-
-          <button
-            onClick={resetTranscript}
-            className="flex items-center gap-2 px-5 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-xl font-semibold shadow-lg"
-          >
-            <FaTrash />
-            Clear
-          </button>
-        </div>
-
-        {/* Input Box */}
-        <div className="flex gap-3 mb-6">
-          <input
-            type="text"
-            value={typedInput}
-            onChange={(e) => setTypedInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-slate-700 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner"
-          />
-          <button
-            onClick={handleTypedInputSubmit}
-            className="px-5 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-white flex items-center justify-center shadow-lg transition"
-          >
-            <FaPaperPlane />
-          </button>
-        </div>
-
-        {/* Transcript Output */}
-        <div className="bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl p-6 shadow-inner min-h-[120px]">
-          <p className="text-xl font-semibold mb-2">📜 Transcript:</p>
-          <p className="whitespace-pre-wrap leading-relaxed">
-            {transcript || (
-              <span className="text-gray-400 dark:text-gray-500">
-                Speak or type to get started...
-              </span>
-            )}
-          </p>
-        </div>
-      </div>
-    </div>
+          {listening ? <FaMicrophoneSlash /> : <FaMicrophone />}
+        </IconButton>
+        <IconButton onClick={resetTranscript} color="secondary" sx={{ mx: 0.5 }}>
+          <FaTrash />
+        </IconButton>
+      </Paper>
+    </Box>
   );
 };
 

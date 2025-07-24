@@ -1,26 +1,44 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
+import { PieChart } from "@mui/x-charts/PieChart";
 
-export default function ExpenseList({ expenses, error }) {
-  // const [expenses, setExpenses] = useState([]);
+export default function ExpenseList() {
+  const [expenses, setExpenses] = useState([]);
   const [grouped, setGrouped] = useState({});
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     axios
-      .get('http://localhost:5000/api/expenses')
+      .get("http://localhost:5000/api/expenses")
       .then((res) => {
         const expenses = res.data;
+        setExpenses(expenses);
         const groupedData = expenses.reduce((acc, curr) => {
-          // Skip if curr is not an object or lacks amount
           if (
             !curr ||
-            typeof curr !== 'object' ||
-            typeof curr.amount !== 'number' ||
+            typeof curr !== "object" ||
+            typeof curr.amount !== "number" ||
             isNaN(curr.amount)
           ) {
             return acc;
           }
-
           const cat = curr.category;
           if (!acc[cat]) {
             acc[cat] = { total: 0, items: [] };
@@ -34,58 +52,89 @@ export default function ExpenseList({ expenses, error }) {
       .catch((err) => console.error(err));
   }, []);
 
-  const [openCategory, setOpenCategory] = useState(null);
+  const handleClickOpen = (category) => {
+    setSelectedCategory(category);
+    setOpen(true);
+  };
 
-  const toggleCategory = (category) => {
-    setOpenCategory(openCategory === category ? null : category);
+  const handleClose = () => {
+    setOpen(false);
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: 600, margin: 'auto' }}>
-      <h2>Expense Summary by Category</h2>
-       {Object.entries(expenses).map(([category, data]) => (
-        <div key={category} style={accordionContainer}>
-          <div onClick={() => toggleCategory(category)} style={accordionHeader}>
-            <strong>{category}</strong> — ₹{data.total.toFixed(2)}
-            <span style={{ float: 'right' }}>
-              {openCategory === category ? '-' : '+'}
-            </span>
-          </div>
-          {openCategory === category && (
-            <div style={accordionBody}>
-              <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                {data.items.map((item) => (
-                  <li key={item._id}>
-                    {/* {item.title} — ₹{item.amount} on {new Date(item.date).toLocaleDateString()} via {item.paymentMethod} */}
-                  {item.title} — ₹{item.amount} on {new Date(item.date).toLocaleDateString()} via {item.paymentMethod}
-                  </li>
+    <Box sx={{ padding: 3 }}>
+      <Card sx={{ maxWidth: 800, margin: "auto", marginBottom: 3 }}>
+        <CardContent>
+          <Typography variant="h5" component="div" sx={{ textAlign: "center", fontWeight: 600, marginBottom: 2 }}>
+            Expense Distribution
+          </Typography>
+          <PieChart
+            series={[
+              {
+                data: Object.entries(grouped).map(([category, data]) => ({
+                  id: category,
+                  label: category,
+                  value: data.total,
+                })),
+              },
+            ]}
+            width={400}
+            height={200}
+          />
+        </CardContent>
+      </Card>
+
+      <TableContainer component={Card} sx={{ maxWidth: 800, margin: "auto" }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Category</TableCell>
+              <TableCell>Total Amount</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {Object.entries(grouped).map(([category, data]) => (
+              <TableRow key={category}>
+                <TableCell>{category}</TableCell>
+                <TableCell>₹{data.total.toFixed(2)}</TableCell>
+                <TableCell>
+                  <Button variant="outlined" onClick={() => handleClickOpen(category)}>
+                    View Details
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>{selectedCategory} Details</DialogTitle>
+        <DialogContent>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Title</TableCell>
+                <TableCell>Amount</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Payment Method</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {selectedCategory &&
+                grouped[selectedCategory]?.items.map((item) => (
+                  <TableRow key={item._id}>
+                    <TableCell>{item.title}</TableCell>
+                    <TableCell>₹{item.amount}</TableCell>
+                    <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
+                    <TableCell>{item.paymentMethod}</TableCell>
+                  </TableRow>
                 ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
+            </TableBody>
+          </Table>
+        </DialogContent>
+      </Dialog>
+    </Box>
   );
 }
-
-const accordionContainer = {
-  border: '1px solid #ccc',
-  marginBottom: '10px',
-  borderRadius: '5px',
-  overflow: 'hidden',
-};
-
-const accordionHeader = {
-  background: '#f7f7f7',
-  padding: '10px 15px',
-  cursor: 'pointer',
-  fontSize: '16px',
-};
-
-const accordionBody = {
-  background: '#fff',
-  padding: '10px 15px',
-};
-
-// export default ExpenseTable;
