@@ -5,16 +5,19 @@ import { CssBaseline } from "@mui/material";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Home from "./pages/Home";
+import ChatPage from "./pages/ChatPage"
 import SpeechLanguageSelector from "./components/SpeechLanguageSelector";
 import SpeechToText from "./components/SpeechToText";
 import FinancialAdvice from "./components/FinancialAdvice";
 import ExpenseList from "./components/ExpenseList";
+import Navbar from "./components/Navbar";
 
 const App = () => {
   const [selectedLang, setSelectedLang] = useState(null);
 
   return (
     <>
+    <Navbar/>
       <CssBaseline />
       <Router>
         <Routes>
@@ -32,6 +35,7 @@ const App = () => {
             )
           } />
           <Route path="/home" element={<Home />} />
+          <Route path="/chat" element={<ChatPage />} />
         </Routes>
       </Router>
     </>
