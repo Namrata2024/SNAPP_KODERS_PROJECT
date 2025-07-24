@@ -1,14 +1,3 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { CssBaseline } from '@mui/material';
-
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Home from './pages/Home';
-import SpeechLanguageSelector from './components/SpeechLanguageSelector';
-import SpeechToText from './components/SpeechToText';
-import FinancialAdvice from './components/FinancialAdvice';
-import ExpenseList from './components/ExpenseList';
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CssBaseline } from '@mui/material';
