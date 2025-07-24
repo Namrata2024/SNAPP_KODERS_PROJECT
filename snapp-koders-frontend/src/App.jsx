@@ -87,6 +87,7 @@ const App = () => {
               )
             }
           />
+          <Route path="/expense-tracker" element={<ExpenseList />} />
           <Route path="/home" element={<Home />} />
           <Route path="/financial-advice" element={<FinancialAdvice />} />
         </Routes>
