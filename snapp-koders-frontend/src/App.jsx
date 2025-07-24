@@ -53,12 +53,14 @@ const App = () => {
 
   return (
     <>
+       <Router>
     <Navbar/>
       <CssBaseline />
-      <Router>
+     
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+             <Route path="/chatbot" element={<ChatPage />} />
           <Route
             path="/speech-to-text"
             element={
@@ -84,18 +86,18 @@ const App = () => {
                     selectedLang={selectedLang}
                     fetchExpenses={fetchExpenses}
                   />
-                  <ExpenseList />
+                                    <ExpenseList  />
                   <FinancialAdvice />
                 </div>
               )
             }
           />
-          <Route path="/expense-tracker" element={<ExpenseList />} />
+          {/* <Route path="/expense-tracker" element={<ExpenseList  />} /> */}
           <Route path="/home" element={<Home />} />
           <Route path="/financial-advice" element={<FinancialAdvice />} />
           <Route path="/chat" element={<ChatPage />} />
         </Routes>
-      </Router>
+     </Router>
     </>
   );
 };

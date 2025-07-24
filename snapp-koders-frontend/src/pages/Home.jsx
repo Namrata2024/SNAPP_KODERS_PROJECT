@@ -55,7 +55,7 @@ const Home = () => {
 
   return (
     <Box>
-      <Navbar />
+  
 
       {/* Hero Section with Animation */}
       <motion.div

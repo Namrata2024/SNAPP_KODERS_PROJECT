@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
 export default function ExpenseList() {
+
+// export default function ExpenseTable({ expenses, error }) {
   // const [expenses, setExpenses] = useState([]);
   const [grouped, setGrouped] = useState({});
 
@@ -43,7 +44,7 @@ export default function ExpenseList() {
   return (
     <div style={{ width: '100%', maxWidth: 600, margin: 'auto' }}>
       <h2>Expense Summary by Category</h2>
-      {Object.entries(grouped).map(([category, data]) => (
+       {Object.entries(expenses).map(([category, data]) => (
         <div key={category} style={accordionContainer}>
           <div onClick={() => toggleCategory(category)} style={accordionHeader}>
             <strong>{category}</strong> — ₹{data.total.toFixed(2)}
@@ -57,9 +58,7 @@ export default function ExpenseList() {
                 {data.items.map((item) => (
                   <li key={item._id}>
                     {/* {item.title} — ₹{item.amount} on {new Date(item.date).toLocaleDateString()} via {item.paymentMethod} */}
-                    {item.title} — ₹{item.amount} on{' '}
-                    {new Date(item.date).toLocaleDateString()} via{' '}
-                    {item.paymentMethod}
+                  {item.title} — ₹{item.amount} on {new Date(item.date).toLocaleDateString()} via {item.paymentMethod}
                   </li>
                 ))}
               </ul>
