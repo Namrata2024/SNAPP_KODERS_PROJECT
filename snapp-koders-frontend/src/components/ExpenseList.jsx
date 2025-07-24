@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const ExpenseTable = () => {
-  const [expenses, setExpenses] = useState([]);
+export default function ExpenseTable({ expenses, error }) {
+  // const [expenses, setExpenses] = useState([]);
   const [grouped, setGrouped] = useState({});
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const ExpenseTable = () => {
           ) {
             return acc;
           }
-          
+
           const cat = curr.category;
           if (!acc[cat]) {
             acc[cat] = { total: 0, items: [] };
@@ -42,7 +42,7 @@ const ExpenseTable = () => {
   return (
     <div style={{ width: '100%', maxWidth: 600, margin: 'auto' }}>
       <h2>Expense Summary by Category</h2>
-      {Object.entries(grouped).map(([category, data]) => (
+      {Object.entries(expenses).map(([category, data]) => (
         <div key={category} style={accordionContainer}>
           <div onClick={() => toggleCategory(category)} style={accordionHeader}>
             <strong>{category}</strong> — ₹{data.total.toFixed(2)}
@@ -53,7 +53,8 @@ const ExpenseTable = () => {
               <ul style={{ margin: 0, paddingLeft: '20px' }}>
                 {data.items.map(item => (
                   <li key={item._id}>
-                    {item.title} — ₹{item.amount} on {new Date(item.date).toLocaleDateString()} via {item.paymentMethod}
+                    {/* {item.title} — ₹{item.amount} on {new Date(item.date).toLocaleDateString()} via {item.paymentMethod} */}
+                     {item.title} — ₹{item.amount} on {new Date(item.date).toLocaleDateString()} via {item.paymentMethod}
                   </li>
                 ))}
               </ul>
@@ -85,4 +86,4 @@ const accordionBody = {
 };
 
 
-export default ExpenseTable;
+// export default ExpenseTable;
