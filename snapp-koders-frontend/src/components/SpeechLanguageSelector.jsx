@@ -11,9 +11,24 @@ const SpeechLanguageSelector = ({ onLanguageSelected }) => {
   const [regionalLang, setRegionalLang] = useState('hi-IN');
 
   const languageOptions = [
-    { label: 'English', code: 'en-US', labelText: 'Should I continue in English?', btnText: 'Yes (English)' },
-    { label: 'Hindi', code: 'hi-IN', labelText: 'क्या मैं हिंदी में जारी रखूं?', btnText: 'हाँ (हिंदी)' },
-    { label: 'Marathi', code: 'mr-IN', labelText: 'मी मराठीत बोलू का?', btnText: 'होय (मराठी)' },
+    {
+      label: 'English',
+      code: 'en-US',
+      labelText: 'Should I continue in English?',
+      btnText: 'Yes (English)',
+    },
+    {
+      label: 'Hindi',
+      code: 'hi-IN',
+      labelText: 'क्या मैं हिंदी में जारी रखूं?',
+      btnText: 'हाँ (हिंदी)',
+    },
+    {
+      label: 'Marathi',
+      code: 'mr-IN',
+      labelText: 'मी मराठीत बोलू का?',
+      btnText: 'होय (मराठी)',
+    },
   ];
 
   useEffect(() => {
@@ -51,7 +66,9 @@ const SpeechLanguageSelector = ({ onLanguageSelected }) => {
 
   return (
     <div className="bg-slate-900 text-white p-6 text-center">
-      <h2 className="text-xl mb-4">Please press the button for your preferred language:</h2>
+      <h2 className="text-xl mb-4">
+        Please press the button for your preferred language:
+      </h2>
       <div className="flex flex-col gap-3 items-center">
         {languageOptions.map((lang) => (
           <button

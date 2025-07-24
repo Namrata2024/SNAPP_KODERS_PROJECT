@@ -81,7 +81,7 @@ const App = () => {
                     selectedLang={selectedLang}
                     fetchExpenses={fetchExpenses}
                   />
-                  <ExpenseList expenses={expenses} error={error} />
+                  <ExpenseList />
                   <FinancialAdvice />
                 </div>
               )
