@@ -19,12 +19,15 @@ exports.fetchExpenses = async (req, res) => {
 };
 
 exports.fetchMistralAPIResponse = async (req, res) => {
-  try {
-    const advice = await expenseService.getMistralAPIResponse(req.body);
-    return res.status(201).json({ advice });
+  try {    
+    console.log('Input to Mistral API Controller:', req.body); 
+    const response = await expenseService.getMistralAPIResponse(req.body.text);
+    return res.status(201).json({ response });
   } catch (error) {
     console.error("Error getting Mistral API data:", error);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: error.message });
+  }finally{
+    console.log('Input to Mistral API Controller in finally:', req.body.text); 
   }
 };
 
