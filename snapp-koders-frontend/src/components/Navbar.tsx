@@ -13,9 +13,7 @@ import {
   useTheme,
   Divider,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import LogoutIcon from "@mui/icons-material/Logout";
-import CloseIcon from "@mui/icons-material/Close";
+import { FiMenu, FiLogOut, FiX } from "react-icons/fi"; // React Icons
 
 const menuItems = [
   "Voice-led Expense Tracker",
@@ -58,7 +56,7 @@ const Navbar = ({ onMenuClick, onLogout }) => {
         {isMobile ? (
           <>
             <IconButton color="inherit" onClick={handleDrawerToggle}>
-              <MenuIcon />
+              <FiMenu size={24} />
             </IconButton>
             <Drawer
               anchor="right"
@@ -73,7 +71,13 @@ const Navbar = ({ onMenuClick, onLogout }) => {
                 },
               }}
             >
-              <Box display="flex" justifyContent="space-between" alignItems="center" px={2} py={1}>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                px={2}
+                py={1}
+              >
                 <Typography
                   variant="subtitle1"
                   sx={{ fontWeight: 600, fontFamily: "Poppins" }}
@@ -81,7 +85,7 @@ const Navbar = ({ onMenuClick, onLogout }) => {
                   Menu
                 </Typography>
                 <IconButton onClick={handleDrawerToggle}>
-                  <CloseIcon />
+                  <FiX size={20} />
                 </IconButton>
               </Box>
               <Divider />
@@ -115,7 +119,7 @@ const Navbar = ({ onMenuClick, onLogout }) => {
                     setDrawerOpen(false);
                   }}
                 >
-                  <LogoutIcon sx={{ mr: 1, color: "#000" }} />
+                  <FiLogOut size={20} style={{ marginRight: 8 }} />
                   <ListItemText
                     primary="Logout"
                     primaryTypographyProps={{
@@ -148,7 +152,7 @@ const Navbar = ({ onMenuClick, onLogout }) => {
               </Typography>
             ))}
             <IconButton color="inherit" onClick={onLogout}>
-              <LogoutIcon sx={{ color: "#000" }} />
+              <FiLogOut size={20} />
             </IconButton>
           </Box>
         )}
