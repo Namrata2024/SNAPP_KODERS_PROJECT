@@ -1,5 +1,5 @@
 const Expense = require('../models/Expense');
-const MISTRAL_API_KEY  = process.env.REACT_APP_MISRAL_API_KEY;
+const MISTRAL_API_KEY  = process.env.MISRAL_API_KEY;
 const axios = require("axios");
 
 exports.addExpense = async (data) => {
