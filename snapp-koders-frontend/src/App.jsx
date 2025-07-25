@@ -60,7 +60,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-             <Route path="/chatbot" element={<SpeechToText />} />
+             <Route path="/chatbot" element={<ChatPage />} />
           <Route
             path="/speech-to-text"
             element={
