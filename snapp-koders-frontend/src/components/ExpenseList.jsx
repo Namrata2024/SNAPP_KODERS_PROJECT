@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import {
   Box,
   Button,
@@ -15,8 +15,8 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from "@mui/material";
-import { PieChart } from "@mui/x-charts/PieChart";
+} from '@mui/material';
+import { PieChart } from '@mui/x-charts/PieChart';
 
 export default function ExpenseList() {
   const [expenses, setExpenses] = useState([]);
@@ -26,15 +26,15 @@ export default function ExpenseList() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/expenses")
+      .get('http://localhost:5000/api/expenses')
       .then((res) => {
         const expenses = res.data;
         setExpenses(expenses);
         const groupedData = expenses.reduce((acc, curr) => {
           if (
             !curr ||
-            typeof curr !== "object" ||
-            typeof curr.amount !== "number" ||
+            typeof curr !== 'object' ||
+            typeof curr.amount !== 'number' ||
             isNaN(curr.amount)
           ) {
             return acc;
@@ -63,9 +63,13 @@ export default function ExpenseList() {
 
   return (
     <Box sx={{ padding: 3 }}>
-      <Card sx={{ maxWidth: 800, margin: "auto", marginBottom: 3 }}>
+      <Card sx={{ maxWidth: 800, margin: 'auto', marginBottom: 3 }}>
         <CardContent>
-          <Typography variant="h5" component="div" sx={{ textAlign: "center", fontWeight: 600, marginBottom: 2 }}>
+          <Typography
+            variant="h5"
+            component="div"
+            sx={{ textAlign: 'center', fontWeight: 600, marginBottom: 2 }}
+          >
             Expense Distribution
           </Typography>
           <PieChart
@@ -84,7 +88,7 @@ export default function ExpenseList() {
         </CardContent>
       </Card>
 
-      <TableContainer component={Card} sx={{ maxWidth: 800, margin: "auto" }}>
+      <TableContainer component={Card} sx={{ maxWidth: 800, margin: 'auto' }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -99,7 +103,10 @@ export default function ExpenseList() {
                 <TableCell>{category}</TableCell>
                 <TableCell>₹{data.total.toFixed(2)}</TableCell>
                 <TableCell>
-                  <Button variant="outlined" onClick={() => handleClickOpen(category)}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleClickOpen(category)}
+                  >
                     View Details
                   </Button>
                 </TableCell>
@@ -127,7 +134,9 @@ export default function ExpenseList() {
                   <TableRow key={item._id}>
                     <TableCell>{item.title}</TableCell>
                     <TableCell>₹{item.amount}</TableCell>
-                    <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {new Date(item.date).toLocaleDateString()}
+                    </TableCell>
                     <TableCell>{item.paymentMethod}</TableCell>
                   </TableRow>
                 ))}

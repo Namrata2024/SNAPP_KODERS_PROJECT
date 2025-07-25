@@ -5,12 +5,12 @@ import axios from 'axios';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Home from './pages/Home';
-import ChatPage from "./pages/ChatPage"
+import ChatPage from './pages/ChatPage';
 import SpeechLanguageSelector from './components/SpeechLanguageSelector';
 import SpeechToText from './components/SpeechToText';
 import FinancialAdvice from './components/FinancialAdvice';
 import ExpenseList from './components/ExpenseList';
-import Navbar from "./components/Navbar";
+import Navbar from './components/Navbar';
 
 const App = () => {
   const [selectedLang, setSelectedLang] = useState(null);
@@ -53,14 +53,14 @@ const App = () => {
 
   return (
     <>
-       <Router>
-    <Navbar/>
-      <CssBaseline />
-     
+      <Router>
+        <Navbar />
+        <CssBaseline />
+
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-             <Route path="/chatbot" element={<ChatPage />} />
+          <Route path="/chatbot" element={<ChatPage />} />
           <Route
             path="/speech-to-text"
             element={
@@ -68,11 +68,11 @@ const App = () => {
                 <SpeechLanguageSelector onLanguageSelected={setSelectedLang} />
               ) : (
                 <div className="w-screen h-screen">
-                  <SpeechToText 
-                  selectedLang={selectedLang}
-                  fetchExpenses={fetchExpenses}
-                   />
-                  <ExpenseList expenses={expenses} error={error}/>
+                  <SpeechToText
+                    selectedLang={selectedLang}
+                    fetchExpenses={fetchExpenses}
+                  />
+                  <ExpenseList expenses={expenses} error={error} />
                   <FinancialAdvice />
                 </div>
               )
@@ -95,12 +95,15 @@ const App = () => {
               )
             }
           />
-          <Route path="/expense-tracker" element={<ExpenseList expenses={expenses} error={error} />} />
+          <Route
+            path="/expense-tracker"
+            element={<ExpenseList expenses={expenses} error={error} />}
+          />
           <Route path="/home" element={<Home />} />
           <Route path="/financial-advice" element={<FinancialAdvice />} />
           <Route path="/chat" element={<ChatPage />} />
         </Routes>
-     </Router>
+      </Router>
     </>
   );
 };
