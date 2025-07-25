@@ -15,10 +15,9 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from "@mui/material";
-import { PieChart } from "@mui/x-charts/PieChart";
-import SpeechToTextExpense from "./SpeechToTextExpense";
-
+} from '@mui/material';
+import { PieChart } from '@mui/x-charts/PieChart';
+import SpeechToTextExpense from './SpeechToTextExpense';
 
 export default function ExpenseList() {
   const [expenses, setExpenses] = useState([]);
@@ -29,14 +28,14 @@ export default function ExpenseList() {
 
   const fetchExpenses = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/expenses");
+      const res = await axios.get('http://localhost:5000/api/expenses');
       const expenses = res.data;
       setExpenses(expenses);
       const groupedData = expenses.reduce((acc, curr) => {
         if (
           !curr ||
-          typeof curr !== "object" ||
-          typeof curr.amount !== "number" ||
+          typeof curr !== 'object' ||
+          typeof curr.amount !== 'number' ||
           isNaN(curr.amount)
         ) {
           return acc;
@@ -88,7 +87,7 @@ export default function ExpenseList() {
             onClick={toggleAddExpense}
             sx={{ marginBottom: 2 }}
           >
-            {showAddExpense ? "Done" : "Add Expense"}
+            {showAddExpense ? 'Done' : 'Add Expense'}
           </Button>
           {showAddExpense && (
             <SpeechToTextExpense fetchExpenses={fetchExpenses} />
@@ -146,6 +145,7 @@ export default function ExpenseList() {
                 <TableCell>Title</TableCell>
                 <TableCell>Amount</TableCell>
                 <TableCell>Date</TableCell>
+                <TableCell>Comments</TableCell>
                 <TableCell>Payment Method</TableCell>
               </TableRow>
             </TableHead>
@@ -155,9 +155,11 @@ export default function ExpenseList() {
                   <TableRow key={item._id}>
                     <TableCell>{item.title}</TableCell>
                     <TableCell>₹{item.amount}</TableCell>
+
                     <TableCell>
                       {new Date(item.date).toLocaleDateString()}
                     </TableCell>
+                    <TableCell>{item.note}</TableCell>
                     <TableCell>{item.paymentMethod}</TableCell>
                   </TableRow>
                 ))}
