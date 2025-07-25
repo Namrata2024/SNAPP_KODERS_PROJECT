@@ -1,0 +1,189 @@
+import React, { useState, useRef } from 'react';
+import axios from 'axios';
+import {
+  FaMicrophone,
+  FaMicrophoneSlash,
+  FaTrash,
+  FaPaperPlane,
+} from 'react-icons/fa';
+
+const SpeechToTextExpense = ({ selectedLang, fetchExpenses }) => {
+  const [listening, setListening] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [typedInput, setTypedInput] = useState('');
+  const recognitionRef = React.useRef(null);
+
+  const startListening = () => {
+    if (
+      !('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)
+    ) {
+      alert('Web Speech API not supported in this browser.');
+      return;
+    }
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = selectedLang;
+    recognition.continuous = true;
+    recognition.interimResults = false;
+
+    recognition.onresult = async (event) => {
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        finalTranscript += event.results[i][0].transcript;
+      }
+      setTranscript((prev) => prev + ' ' + finalTranscript);
+
+      // Parse misral expense data and save into db
+      parseExpensesWithMistral(finalTranscript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Recognition error:', event);
+    };
+
+    recognition.onend = () => {
+      if (listening) recognition.start();
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setListening(true);
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setListening(false);
+    }
+  };
+
+  const resetTranscript = () => {
+    setTranscript('');
+    setTypedInput('');
+  };
+
+  const handleTypedInputSubmit = () => {
+    if (typedInput.trim() !== '') {
+      setTranscript((prev) => prev + ' ' + typedInput.trim());
+      // Parse misral expense data and save into db
+      parseExpensesWithMistral(typedInput.trim());
+      // clear input text field
+      setTypedInput('');
+    }
+  };
+
+  //#region "Expense Parsing"
+
+  const isEmptyObject = (obj) => JSON.stringify(obj) === '{}';
+
+  async function parseExpensesWithMistral(transcript) {
+    fetch('http://localhost:5000/api/expenses/mistral', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: transcript }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        if (!isEmptyObject(data)) {
+          const parsed = JSON.parse(data.response);
+          console.log('Parsed Expense:', parsed);
+          if (!isEmptyObject(parsed) && parsed.amount > 0) {
+            postExpenseData(parsed, transcript);
+          }
+        }
+      })
+      .catch((err) => console.error(err));
+  }
+
+  const postExpenseData = async (ExpenseData, voiceText) => {
+    if (ExpenseData) {
+      const amount = parseInt(ExpenseData.amount);
+      const category = ExpenseData.category;
+      try {
+        await axios.post('http://localhost:5000/api/expenses', {
+          amount,
+          category,
+          note: voiceText,
+          date: new Date(),
+        });
+
+        // Get saved data from database
+        await fetchExpenses();
+      } catch (error) {
+        console.error('Error posting expense data:', error);
+      }
+    } else {
+      alert(
+        "Couldn't parse input. Try saying something like 'Add 200 rupees for groceries'."
+      );
+    }
+  };
+
+  //#endregion "Expense Parsing"
+
+  return (
+    <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl p-6 shadow-lg transition-colors duration-300">
+      <h2 className="text-2xl font-bold text-center mb-6">
+        🎙️ Smart Voice & Text Assistant
+      </h2>
+
+      {/* Control Buttons */}
+      <div className="flex flex-wrap justify-center gap-4 mb-6">
+        <button
+          onClick={listening ? stopListening : startListening}
+          className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition duration-200 ${
+            listening
+              ? 'bg-red-600 hover:bg-red-700 text-white'
+              : 'bg-green-600 hover:bg-green-700 text-white'
+          } shadow-lg`}
+        >
+          {listening ? <FaMicrophoneSlash /> : <FaMicrophone />}
+          {listening ? 'Stop Listening' : 'Start Listening'}
+        </button>
+
+        <button
+          onClick={resetTranscript}
+          className="flex items-center gap-2 px-5 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-xl font-semibold shadow-lg"
+        >
+          <FaTrash />
+          Clear
+        </button>
+      </div>
+
+      {/* Input Box */}
+      <div className="flex gap-3 mb-6">
+        <input
+          type="text"
+          value={typedInput}
+          onChange={(e) => setTypedInput(e.target.value)}
+          placeholder="Type your message..."
+          className="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-slate-700 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner"
+        />
+        <button
+          onClick={handleTypedInputSubmit}
+          className="px-5 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-white flex items-center justify-center shadow-lg transition"
+        >
+          <FaPaperPlane />
+        </button>
+      </div>
+
+      {/* Transcript Output */}
+      <div className="bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl p-6 shadow-inner min-h-[120px]">
+        <p className="text-xl font-semibold mb-2">📜 Transcript:</p>
+        <p className="whitespace-pre-wrap leading-relaxed">
+          {transcript || (
+            <span className="text-gray-400 dark:text-gray-500">
+              Speak or type to get started...
+            </span>
+          )}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default SpeechToTextExpense;

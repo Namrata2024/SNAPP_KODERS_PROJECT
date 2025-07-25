@@ -17,39 +17,46 @@ import {
   Typography,
 } from "@mui/material";
 import { PieChart } from "@mui/x-charts/PieChart";
+import SpeechToTextExpense from "./SpeechToTextExpense";
+
 
 export default function ExpenseList() {
   const [expenses, setExpenses] = useState([]);
   const [grouped, setGrouped] = useState({});
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [open, setOpen] = useState(false);
+  const [showAddExpense, setShowAddExpense] = useState(false);
+
+  const fetchExpenses = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/expenses");
+      const expenses = res.data;
+      setExpenses(expenses);
+      const groupedData = expenses.reduce((acc, curr) => {
+        if (
+          !curr ||
+          typeof curr !== "object" ||
+          typeof curr.amount !== "number" ||
+          isNaN(curr.amount)
+        ) {
+          return acc;
+        }
+        const cat = curr.category;
+        if (!acc[cat]) {
+          acc[cat] = { total: 0, items: [] };
+        }
+        acc[cat].total += curr.amount;
+        acc[cat].items.push(curr);
+        return acc;
+      }, {});
+      setGrouped(groupedData);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/expenses")
-      .then((res) => {
-        const expenses = res.data;
-        setExpenses(expenses);
-        const groupedData = expenses.reduce((acc, curr) => {
-          if (
-            !curr ||
-            typeof curr !== "object" ||
-            typeof curr.amount !== "number" ||
-            isNaN(curr.amount)
-          ) {
-            return acc;
-          }
-          const cat = curr.category;
-          if (!acc[cat]) {
-            acc[cat] = { total: 0, items: [] };
-          }
-          acc[cat].total += curr.amount;
-          acc[cat].items.push(curr);
-          return acc;
-        }, {});
-        setGrouped(groupedData);
-      })
-      .catch((err) => console.error(err));
+    fetchExpenses();
   }, []);
 
   const handleClickOpen = (category) => {
@@ -61,6 +68,10 @@ export default function ExpenseList() {
     setOpen(false);
   };
 
+  const toggleAddExpense = () => {
+    setShowAddExpense((prev) => !prev);
+  };
+
   return (
     <Box sx={{ padding: 3 }}>
       <Card sx={{ maxWidth: 800, margin: "auto", marginBottom: 3 }}>
@@ -68,6 +79,16 @@ export default function ExpenseList() {
           <Typography variant="h5" component="div" sx={{ textAlign: "center", fontWeight: 600, marginBottom: 2 }}>
             Expense Distribution
           </Typography>
+          <Button
+            variant="contained"
+            onClick={toggleAddExpense}
+            sx={{ marginBottom: 2 }}
+          >
+            {showAddExpense ? "Done" : "Add Expense"}
+          </Button>
+          {showAddExpense && (
+            <SpeechToTextExpense fetchExpenses={fetchExpenses} />
+          )}
           <PieChart
             series={[
               {
