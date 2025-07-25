@@ -126,8 +126,11 @@ const SpeechToTextExpense = ({ selectedLang, fetchExpenses }) => {
   //#endregion "Expense Parsing"
 
   return (
-    <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl p-6 shadow-lg transition-colors duration-300">
-      <h2 className="text-2xl font-bold text-center mb-6">
+    <div className="bg-white  text-slate-900 dark:text-white rounded-2xl p-6 shadow-lg transition-colors duration-300">
+      <h2
+        className="text-2xl font-bold text-center mb-6"
+        style={{ color: 'black' }}
+      >
         🎙️ Smart Voice & Text Assistant
       </h2>
 
@@ -161,7 +164,7 @@ const SpeechToTextExpense = ({ selectedLang, fetchExpenses }) => {
           value={typedInput}
           onChange={(e) => setTypedInput(e.target.value)}
           placeholder="Type your message..."
-          className="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-slate-700 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner"
+          className="flex-1 px-4 py-3 text-black rounded-xl bg-white  placeholder-gray-400 dark:placeholder-gray-500 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner"
         />
         <button
           onClick={handleTypedInputSubmit}
@@ -172,8 +175,10 @@ const SpeechToTextExpense = ({ selectedLang, fetchExpenses }) => {
       </div>
 
       {/* Transcript Output */}
-      <div className="bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl p-6 shadow-inner min-h-[120px]">
-        <p className="text-xl font-semibold mb-2">📜 Transcript:</p>
+      <div className="bg-white  border border-slate-300 dark:border-slate-600 rounded-xl p-6 shadow-inner min-h-[120px]">
+        <p className="text-xl font-semibold mb-2 " style={{ color: 'black' }}>
+          📜 Transcript:
+        </p>
         <p className="whitespace-pre-wrap leading-relaxed">
           {transcript || (
             <span className="text-gray-400 dark:text-gray-500">
