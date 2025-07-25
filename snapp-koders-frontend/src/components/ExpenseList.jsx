@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import {
   Box,
   Button,
@@ -74,9 +74,13 @@ export default function ExpenseList() {
 
   return (
     <Box sx={{ padding: 3 }}>
-      <Card sx={{ maxWidth: 800, margin: "auto", marginBottom: 3 }}>
+      <Card sx={{ maxWidth: 800, margin: 'auto', marginBottom: 3 }}>
         <CardContent>
-          <Typography variant="h5" component="div" sx={{ textAlign: "center", fontWeight: 600, marginBottom: 2 }}>
+          <Typography
+            variant="h5"
+            component="div"
+            sx={{ textAlign: 'center', fontWeight: 600, marginBottom: 2 }}
+          >
             Expense Distribution
           </Typography>
           <Button
@@ -105,7 +109,7 @@ export default function ExpenseList() {
         </CardContent>
       </Card>
 
-      <TableContainer component={Card} sx={{ maxWidth: 800, margin: "auto" }}>
+      <TableContainer component={Card} sx={{ maxWidth: 800, margin: 'auto' }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -120,7 +124,10 @@ export default function ExpenseList() {
                 <TableCell>{category}</TableCell>
                 <TableCell>₹{data.total.toFixed(2)}</TableCell>
                 <TableCell>
-                  <Button variant="outlined" onClick={() => handleClickOpen(category)}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handleClickOpen(category)}
+                  >
                     View Details
                   </Button>
                 </TableCell>
@@ -148,7 +155,9 @@ export default function ExpenseList() {
                   <TableRow key={item._id}>
                     <TableCell>{item.title}</TableCell>
                     <TableCell>₹{item.amount}</TableCell>
-                    <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {new Date(item.date).toLocaleDateString()}
+                    </TableCell>
                     <TableCell>{item.paymentMethod}</TableCell>
                   </TableRow>
                 ))}

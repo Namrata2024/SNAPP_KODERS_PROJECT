@@ -1,21 +1,42 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-});
+const userSchema = new mongoose.Schema(
+  {
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
 
-// Hash password before saving
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
+    // Profile Data
+    name: { type: String, required: true },
+    age: { type: Number, required: true },
+    gender: { type: String, enum: ["male", "female", "other"], required: true },
+    occupation: { type: String },
+    location: { type: String },
 
-// Match password method
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
+    language: [{ type: String }],
+
+    householdSize: { type: Number },
+    education: { type: String },
+
+    incomeType: {
+      type: String,
+      enum: ["daily", "monthly", "seasonal", "other"],
+    },
+    dailyIncome: { type: Number },
+    monthlyIncome: { type: Number },
+
+    expenses: [{ type: String }],
+
+    debtStatus: { type: String },
+
+    digitalAccess: { type: String },
+    cashVsDigital: { type: String },
+
+    savingGoal: { type: String },
+  },
+  {
+    timestamps: true, // <-- This adds createdAt and updatedAt
+  }
+);
 
 module.exports = mongoose.model("User", userSchema);

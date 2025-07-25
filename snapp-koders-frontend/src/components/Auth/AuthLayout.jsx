@@ -1,13 +1,21 @@
 // components/Auth/AuthLayout.jsx
-import React from "react";
-import { Box, Typography, Stepper, Step, StepLabel, useMediaQuery, useTheme } from "@mui/material";
-import Logo from "../../../public/assets/bachat-saathi.png"; // Place your logo in src/assets/
+import React from 'react';
+import {
+  Box,
+  Typography,
+  Stepper,
+  Step,
+  StepLabel,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
+import Logo from '../../../public/assets/bachat-saathi.png'; // Adjust path as needed
 
-const steps = ["Enter Phone", "Verify OTP", "Complete Profile"];
+const steps = ['Enter login', 'Signup'];
 
 const AuthLayout = ({ activeStep, children }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <Box
@@ -17,16 +25,14 @@ const AuthLayout = ({ activeStep, children }) => {
       flexDirection="column"
       alignItems="center"
       justifyContent="center"
-    //   bgcolor="#f9f9f9"
     >
       <Box
         sx={{
-          width: "100%",
+          width: '100%',
           maxWidth: 400,
-          bgcolor: "#fff",
+          bgcolor: '#fff',
           p: isMobile ? 2 : 3,
           borderRadius: 3,
-        //   boxShadow: 3,
         }}
       >
         {/* Logo */}
@@ -36,25 +42,29 @@ const AuthLayout = ({ activeStep, children }) => {
             alt="App Logo"
             style={{
               width: isMobile ? 70 : 90,
-              borderRadius: "50%",
+              borderRadius: '50%',
             }}
           />
         </Box>
 
         {/* Title */}
-        <Typography variant={isMobile ? "h6" : "h5"} align="center" gutterBottom>
+        <Typography
+          variant={isMobile ? 'h6' : 'h5'}
+          align="center"
+          gutterBottom
+        >
           Welcome
         </Typography>
 
         {/* Stepper */}
-        <Stepper
+        {/* <Stepper
           activeStep={activeStep}
           alternativeLabel
           sx={{
-            width: "100%",
+            width: '100%',
             mb: isMobile ? 2 : 3,
-            "& .MuiStepLabel-label": {
-              fontSize: isMobile ? "0.75rem" : "0.875rem",
+            '& .MuiStepLabel-label': {
+              fontSize: isMobile ? '0.75rem' : '0.875rem',
             },
           }}
         >
@@ -63,9 +73,9 @@ const AuthLayout = ({ activeStep, children }) => {
               <StepLabel>{label}</StepLabel>
             </Step>
           ))}
-        </Stepper>
+        </Stepper> */}
 
-        {/* Page Content */}
+        {/* Injected Page Content */}
         <Box>{children}</Box>
       </Box>
     </Box>

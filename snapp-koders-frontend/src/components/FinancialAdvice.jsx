@@ -6,6 +6,8 @@ const FinancialAdvice = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const token = localStorage.getItem('token');
+
   const requestBody = {
     age: 32,
     gender: 'female',
@@ -41,6 +43,7 @@ const FinancialAdvice = () => {
           {
             headers: {
               'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
             },
           }
         );
